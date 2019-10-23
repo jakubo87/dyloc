@@ -210,7 +210,7 @@ class topology {
   , _domain_vertices(other._domain_vertices)
   , _unit_vertices(other._unit_vertices) {
     DYLOC_LOG_DEBUG("dylocxx::topology.topology(other)", "copy constructor");
-  	typedef graph_t::vertex_descriptor vertex_t;
+    typedef graph_t::vertex_descriptor   vertex_t;
     typedef std::map<vertex_t, vertex_t> vertex_map_t;
   	vertex_map_t vertexMap;
     boost::associative_property_map<vertex_map_t> vertexMapWrapper(vertexMap);
@@ -510,6 +510,47 @@ class topology {
   int  subdomain_distance(
           const std::string & parent_tag,
           const std::string & child_tag);
+ public:
+  //jakub
+  //
+  //
+  
+  
+  //creates an edge between 2 domains: vertex_desc input 
+  //boost returns a std::pair with the edge and a bool if successful
+  //therefore .first only returns the edge desc
+  auto connect(
+      const graph_vertex_t & source,
+      const graph_vertex_t & target,
+      const edge_type e_t,
+      const int dist) {
+   return boost::add_edge(source,target,{e_t, dist},_graph).first;
+  }
+  
+  void disconnect(graph_edge_t & edge){
+    boost::remove_edge(edge,_graph);
+  } 
+  
+  auto calculate_distance(
+  		const graph_vertex_t & source,
+  		const graph_vertex_t & target,
+  		std::string metric_name)
+  {
+    return _distance_metrics[metric_name](source, target);
+  }
+  
+  auto get_edge_distance(graph_edge_t & edge){
+    return get(boost::edge_property_tag, _graph, edge).distance;
+  }
+  //returns vertex_descriptor aka graph_vertex_t 
+  //same can be achieved by topo.domains().find(tag) (not confirmed yet)
+  auto domain_vertex(const std::string & s){
+    return _domain_vertices[s];
+  }
+
+//  auto get_edge_type(graph_edge_t & edge){
+//    return get({edge_properties.type}, _graph, edge);
+//  }
 };
 
 } // namespace dyloc
