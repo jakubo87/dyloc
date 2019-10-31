@@ -453,8 +453,8 @@ class topology {
 
   void add_distance_metric(
         std::string metric_name,
-        std::function<Metric(const Domain && source,
-                             const Domain && target)> fn)
+        std::function<Metric(const Domain & source,
+                             const Domain & target)> fn)
   {
     _distance_metrics[metric_name]=fn;
   }
@@ -470,8 +470,8 @@ class topology {
 
  private:
   std::map<std::string,
-           std::function<Metric(const Domain && source,
-                                const Domain && target)>
+           std::function<Metric(const Domain & source,
+                                const Domain & target)>
           > _distance_metrics;
 
   void build_hierarchy(
@@ -518,40 +518,31 @@ class topology {
   
   //creates an edge between 2 domains: vertex_desc input 
   //boost returns a std::pair with the edge and a bool if successful
-  //therefore .first only returns the edge desc
+  //therefore .first only returns the edge desc and .second tells if it actually succeeded
   auto connect(
-      const graph_vertex_t & source,
-      const graph_vertex_t & target,
-      const edge_type e_t,
-      const int dist) {
-   return boost::add_edge(source,target,{e_t, dist},_graph).first;
+  	const std::string & source,
+  	const std::string & target,
+        const edge_properties & ep) {
+   return boost::add_edge(
+		   _domain_vertices[source],
+		   _domain_vertices[target],
+		   ep, _graph);
   }
   
   void disconnect(graph_edge_t & edge){
     boost::remove_edge(edge,_graph);
   } 
   
-  auto calculate_distance(
-  		const graph_vertex_t & source,
-  		const graph_vertex_t & target,
-  		std::string metric_name)
+  //has to be template to be used with vertices and domains
+  int calculate_distance(
+  	const Domain & source,
+  	const Domain & target,
+  	const std::string & metric_name)
   {
     return _distance_metrics[metric_name](source, target);
   }
-  
-  auto get_edge_distance(graph_edge_t & edge){
-    return get(boost::edge_property_tag, _graph, edge).distance;
-  }
-  //returns vertex_descriptor aka graph_vertex_t 
-  //same can be achieved by topo.domains().find(tag) (not confirmed yet)
-  auto domain_vertex(const std::string & s){
-    return _domain_vertices[s];
-  }
 
-//  auto get_edge_type(graph_edge_t & edge){
-//    return get({edge_properties.type}, _graph, edge);
-//  }
-};
+}; // topology
 
 } // namespace dyloc
 

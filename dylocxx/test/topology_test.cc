@@ -28,12 +28,8 @@ TEST_F(TopologyTest, DistanceMetric) {
 
   auto & topo = dyloc::team_topology();
 
-  //we want an iterator, dont we?
-  //boost visitor?
-  //
-  const auto & dom_source_it = domain_vertices(".0.0");
-  const auto & dom_target_it = domain_vertices(".0.1");
-  //alternatively topo.domains().find(tag);
+  const auto & dom_source = topo.domains().at(".0.0.0.0");
+  const auto & dom_target = topo.domains().at(".0.0.0.1");
 
   DYLOC_LOG_DEBUG("TopologyTest.DistanceMetric", "Metrics:");
 
@@ -55,25 +51,24 @@ TEST_F(TopologyTest, AddandRemoveConnection) {
   dyloc::init(&TESTENV.argc, &TESTENV.argv);
   auto & topo = dyloc::team_topology();
 
-  const auto & source = domain_vertices[".0.0"];
-  const auto & target = domain_vertices[".0.1"];
+  auto topo_cpy = topo;
 
-  //specifying category of edge
-  using canon = topology::edge_type::contains;
-  using log = topology::edge_type::logical;
-  //same vertices but different types of edges
-  auto edge1 = topo.connect(source, target, canon, 42);
-  auto edge2 = topo.connect(source, target, log, 43);
+  const std::string source_tag = ".0.0";
+  const std::string target_tag = ".0.1";
 
-  ASSERT_EQ(42, topo.get_edge_distance(edge1, canon));
-  ASSERT_EQ(43, topo.get_edge_distance(edge2, log));
-
-  //(hopefully) overwriting the edge
-  auto edge2 = topo.connect(source, target, canon, 43);
-  ASSERT_EQ(43, topo.get_edge_distance(edge1, canon));
-
-
-  DYLOC_LOG_DEBUG_VAR("TopologyTest.AddandRemoveConnection");
+  //same source/target but different types of edges
+  auto edge1 = topo.connect(source_tag, target_tag, topology::edge_properties{topology::edge_type::contains, 42});
+  auto edge2 = topo.connect(source_tag, target_tag, topology::edge_properties{topology::edge_type::logical, 43});
+  ASSERT_EQ(1, edge1.second);
+  ASSERT_EQ(1, edge2.second);
+  auto edge3 = topo.connect(source_tag, target_tag, topology::edge_properties{topology::edge_type::contains, 42});
+  ASSERT_NE(1, edge3.second);
+  //see if source and target are connected (adjacent)
+  //
+  //-> disconnect
+  //
+  //see if they are not neighbours anymore and all changes have been reverted
+  //ASSERT_EQ(topo,topo_cpy);
 
   dyloc::finalize();
 }
