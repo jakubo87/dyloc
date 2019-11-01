@@ -464,7 +464,6 @@ class topology {
     for (auto m : _distance_metrics){
       DMs +=m.first;
     }    
-    DYLOC_LOG_DEBUG("Dyloc::Topology.list_distance_metrics ", DMs);
     return DMs;
   }
 
