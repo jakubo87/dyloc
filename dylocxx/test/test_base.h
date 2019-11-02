@@ -15,9 +15,9 @@
 #include <boost/graph/graph_utility.hpp>
 #include <boost/graph/depth_first_search.hpp>
 
-#if DYLOC_ENABLE_GRAPHVIZ
+//#if DYLOC_ENABLE_GRAPHVIZ
 #include <boost/graph/graphviz.hpp>
-#endif
+//#endif
 
 #include <string>
 #include <iostream>
@@ -89,7 +89,7 @@ public:
 
 template <class Graph>
 void graphviz_out(const Graph & graph, const std::string & filename) {
-#if DYLOC_ENABLE_GRAPHVIZ
+//#if DYLOC_ENABLE_GRAPHVIZ
   std::ofstream of(filename);
   write_graphviz(of, graph,
                  boost::make_label_writer(
@@ -100,7 +100,7 @@ void graphviz_out(const Graph & graph, const std::string & filename) {
                    boost::get(
                      &topology::edge_properties::distance,
                      graph)));
-#endif
+//#endif
 }
 
 
