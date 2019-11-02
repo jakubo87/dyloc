@@ -167,7 +167,7 @@ void topology::relink_to_parent(
                   "to",   domain_tag_new_parent);
 
   // Remove edge from current parent to domain:
-  boost::remove_edge(
+  boost::remove_edge(//<- Warning: removes ALL edges between these two domains 
     _domain_vertices[domain_tag_old_parent],
     _domain_vertices[domain_tag],
     _graph);

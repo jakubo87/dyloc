@@ -22,29 +22,39 @@ namespace dyloc {
 namespace test {
 
 
-// Jakub
-//TEST_F(TopologyTest, DistanceMetric) {
-//  dyloc::init(&TESTENV.argc, &TESTENV.argv);
-//
-//  auto & topo = dyloc::team_topology();
-//
-//  const auto & dom_source = topo.domains().at(".0.0.0.0.0");
-//  const auto & dom_target = topo.domains().at(".0.0.0.0.0.0");
-//
-//  auto dist_fn = [](const auto & a, const auto & b){ return 10; };
-//  std::string metric_name = "user_metric";
-//  topo.add_distance_metric(metric_name, dist_fn);
-//
-//  DYLOC_LOG_DEBUG("TopologyTest.DistanceMetric", "Metrics:");
-//  auto dist_metrics = topo.list_distance_metrics();
-//  DYLOC_LOG_DEBUG("TopologyTest.DistanceMetric", dist_metrics);
-//
-//  ASSERT_EQ(10, topo.calculate_distance(dom_source, dom_target, metric_name));
-//  graphviz_out(topo.graph(), "testgraph.dot");
-//
-//  dyloc::finalize();
-//}
-//
+
+TEST_F(TopologyTest, DistanceMetric) {
+  dyloc::init(&TESTENV.argc, &TESTENV.argv);
+
+  auto & topo = dyloc::team_topology();
+
+  const auto & dom_source = topo.domains().at(".0.0.0.0.0.0");
+  const auto & dom_target = topo.domains().at(".0.0.0.0.0.0.0");
+
+  auto dist_fn = [&](const auto & a,
+                     const auto & b){
+    return (7 - topo.ancestor({a.domain_tag, b.domain_tag}).level) *10; };
+
+  std::string metric_name = "user_metric";
+  topo.add_distance_metric(metric_name, dist_fn);
+
+  DYLOC_LOG_DEBUG("TopologyTest.DistanceMetric", "Metrics:");
+  auto dist_metrics = topo.list_distance_metrics();
+  DYLOC_LOG_DEBUG("TopologyTest.DistanceMetric", dist_metrics);
+
+  ASSERT_EQ(10, topo.calculate_distance(dom_source, dom_target, metric_name));
+  
+  std::for_each(topo.domains().begin(),
+	        topo.domains().end(),
+		[&](const auto & target){
+    std::cout << "Distance ("<< metric_name <<") from " << dom_source.domain_tag << " to " << target.first << " >> " << std::to_string(topo.calculate_distance(dom_source,target.second, metric_name)) << std::endl;
+                 });
+
+  graphviz_out(topo.graph(), "testgraph.dot");
+
+  dyloc::finalize();
+}
+
 TEST_F(TopologyTest, AddandRemoveConnection) {
   dyloc::init(&TESTENV.argc, &TESTENV.argv);
   auto & topo = dyloc::team_topology();
@@ -59,18 +69,13 @@ TEST_F(TopologyTest, AddandRemoveConnection) {
   ASSERT_EQ(1, edge1.second);
   ASSERT_EQ(1, edge2.second);
   auto edge3 = topo.connect(source_tag, target_tag, topology::edge_properties{topology::edge_type::contains, 42});
-  ASSERT_NE(0, edge3.second);// 2 same connections? TODO!!
+  ASSERT_NE(0, edge3.second);// 2 same connections? TODO!?
   DYLOC_LOG_DEBUG("connected sucessfully","Assertion completed");
   graphviz_out(topo.graph(), "testgraph1.dot");
   //-> disconnect
   topo.disconnect(edge1.first);
   topo.disconnect(edge2.first);
   topo.disconnect(edge3.first);
-//I wonder why edge[1..3] still exist...
-// ASSERT_EQ(0, edge1.second);
-// ASSERT_EQ(0, edge2.second);
-// ASSERT_NE(1, edge3.second); //<-- ...especially this one...!
-//see if they are not neighbours anymore and all changes have been reverted
 
 //ASSERT_EQ(topo,topo_cpy); would have to implement operator= (check all members for equality)
   graphviz_out(topo.graph(), "testgraph2.dot");

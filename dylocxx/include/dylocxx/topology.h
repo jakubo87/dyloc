@@ -518,6 +518,8 @@ class topology {
   //creates an edge between 2 domains: vertex_desc input 
   //boost returns a std::pair with the edge and a bool if successful
   //therefore .first only returns the edge desc and .second tells if it actually succeeded
+  //NOTE: this is potentially threatening the topology as a treelike structure
+  //also: parallel edges are possible (TODO)
   auto connect(
   	const std::string & source,
   	const std::string & target,
@@ -532,7 +534,8 @@ class topology {
     boost::remove_edge(edge,_graph);
   } 
   
-  //has to be template to be used with vertices and domains
+  //this function is going to be called whenever a distance is to be 'measured'
+  //the edge weights will be more or less obsolete
   int calculate_distance(
   	const Domain & source,
   	const Domain & target,
@@ -540,6 +543,34 @@ class topology {
   {
     return _distance_metrics[metric_name](source, target);
   }
+
+/* //partition the graph according to the predicate
+ * std::partition(domains, predicate)
+ *
+ * group partitions
+ * 
+ * return topology
+ *
+ *
+ * //projection: turn a graph into a treelike topology
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ */
+
+
+
 
 }; // topology
 
