@@ -544,33 +544,83 @@ class topology {
     return _distance_metrics[metric_name](source, target);
   }
 
-/* //partition the graph according to the predicate
- * std::partition(domains, predicate)
+ /* NOTE: projection: turn a graph into a treelike topology
  *
- * group partitions
- * 
- * return topology
- *
- *
- * //projection: turn a graph into a treelike topology
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
+ * make assertions to make sure the predicates do not exclude one another or leave no solution. or simply leave topology empty (like a query with contradicting 
  *
  */
+  //prototyping partition routine
+  //the actual requesting function will probably be a wrapping tree of functions of functions and qualities
+  void partition_CU(int num_gr = 2){
+    if(num_gr==1) return;
+
+    auto dist_fn = [&](const auto & a,
+                     const auto & b){
+    return (7 - ancestor({a.domain_tag, b.domain_tag}).level) *10; };
+
+    std::string metric_name = "user_metric";
+    add_distance_metric(metric_name, dist_fn);
 
 
 
+    auto unit_ids = _domains["."].unit_ids;
+    int num_cores = unit_ids.size();
+    // Unit ids to domain tags:
+    std::vector<std::string> unit_domain_tags(num_cores);
+    std::transform(unit_ids.begin(), unit_ids.end(),
+                   unit_domain_tags.begin(),
+                   [&](const dart_global_unit_t & uid) -> std::string {
+                     auto unit_dom_tag = _graph[_unit_vertices.at(uid.id)].domain_tag;
+                     return unit_dom_tag;
+                   });
+
+
+    for(const auto & uid : unit_domain_tags){
+      std::cout << uid << std::endl; 
+    
+    }
+    //DYLOC_ASSERT(num_gr <  num_cores);
+    //handle requested qualities
+    std::string ref_tag = unit_domain_tags[0];
+    std::vector<std::pair<std::string, int>> distances (unit_ids.size());
+
+    std::for_each(unit_domain_tags.begin(),
+		  unit_domain_tags.end(),
+		  [&](const auto & tag){
+		    int dist = calculate_distance(_domains[ref_tag],_domains[tag], metric_name);
+                    distances.push_back(std::make_pair(tag,dist)); 
+		  }
+    );
+    std::sort(distances.begin(),distances.end(),
+		  [](const auto & a, const auto & b)
+		  {return a.second < b.second;}
+    );
+
+    //extract tags in order ... does std::transform preserve order...?
+    std::transform(distances.begin(),
+		   distances.end(),
+		   unit_domain_tags.begin(),
+                   [&](const auto & pair)
+                     {return pair.first;}
+    );
+
+    int div_el = num_cores/num_gr;
+    
+   group_domains(unit_domain_tags.begin(),unit_domain_tags.begin()+div_el);
+   group_domains(unit_domain_tags.begin()+div_el,unit_domain_tags.end());
+
+    //possible cluster calculation (probably not necessary... it's not for probing the system after all...)
+//    for other purposes might be interesting:
+//    const auto & std::partition(/*units*/);
+//
+//    //group
+//
+//
+  }
+
+//NOTE multiple pathways are rather unlikely in single systems as of now, but can be common in networks.
+//...different thing on accelerator modules. calculating distances is up to the user 
+//CRITICAL TODO: will everything still work if topology is already grouped and partitioned...?
 
 }; // topology
 
