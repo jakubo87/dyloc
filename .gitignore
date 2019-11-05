@@ -47,8 +47,8 @@ build.mic
 *.app
 
 # Pictures and Graphs
-#*.dot
-#*.png
+*.dot
+*.png
 
 
 
