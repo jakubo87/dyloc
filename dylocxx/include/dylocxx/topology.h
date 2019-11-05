@@ -606,16 +606,14 @@ class topology {
 
     int div_el = num_cores/num_gr;
     
-   group_domains(unit_domain_tags.begin(),unit_domain_tags.begin()+div_el);
-   group_domains(unit_domain_tags.begin()+div_el,unit_domain_tags.end());
+   group_domains(unit_domain_tags.begin(),
+		 unit_domain_tags.begin()+div_el);
+   group_domains(unit_domain_tags.begin()+div_el,
+		 unit_domain_tags.end());
 
     //possible cluster calculation (probably not necessary... it's not for probing the system after all...)
 //    for other purposes might be interesting:
 //    const auto & std::partition(/*units*/);
-//
-//    //group
-//
-//
   }
 
 //NOTE multiple pathways are rather unlikely in single systems as of now, but can be common in networks.

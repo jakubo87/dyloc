@@ -45,3 +45,7 @@ build.mic
 *.exe
 *.out
 *.app
+
+# Pictures and Graphs
+*.dot
+*.png

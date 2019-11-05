@@ -60,8 +60,17 @@ TEST_F(TopologyTest, PartitionTest) {
   dyloc::init(&TESTENV.argc, &TESTENV.argv);
   auto & topo = dyloc::team_topology();
 
+  locality_domain_dfs_output_visitor<typename topology::domain_map>
+    vis(topo.domains());
+
+  DYLOC_LOG_DEBUG("TopologyTest.PartitionTest", "total domain hierarchy:");
+  graphviz_out(topo.graph(), "PartitionTest_orig.dot");
+  if (dyloc::myid().id == 0) {
+    topo.depth_first_search(vis);
+  }
+  dart_barrier(DART_TEAM_ALL);
   topo.partition_CU();
-  //graphviz_out(topo.graph(), "PartitionTest.dot");
+  graphviz_out(topo.graph(), "PartitionTest_changed.dot");
 
   dyloc::finalize();
 }
